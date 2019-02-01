@@ -3,11 +3,10 @@ MODEL='bicycle_gan'
 # dataset details
 CLASS='packages'
 NZ=8
-#NO_FLIP='--no_flip'
 DIRECTION='BtoA'
 LOAD_SIZE=600
-CROP_SIZE=600
-SAVE_EPOCH=25
+CROP_SIZE=256
+SAVE_EPOCH=5
 INPUT_NC=3
 NITER=200
 NITER_DECAY=200
@@ -24,10 +23,10 @@ NAME=${CLASS}_${MODEL}_${DATE}
 # command
 CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --display_id ${DISPLAY_ID} \
-  --display_port ${PORT} \
   --dataroot ./datasets/${CLASS} \
   --name ${NAME} \
   --model ${MODEL} \
+  --display_port ${PORT} \
   --direction ${DIRECTION} \
   --checkpoints_dir ${CHECKPOINTS_DIR} \
   --load_size ${LOAD_SIZE} \
