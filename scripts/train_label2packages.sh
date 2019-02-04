@@ -16,7 +16,7 @@ GPU_ID=0
 # DISPLAY_ID=$((GPU_ID*10+1))
 DISPLAY_ID=-1
 PORT=2005
-CHECKPOINTS_DIR=../checkpoints/${CLASS}/
+CHECKPOINTS_DIR=./checkpoints/${CLASS}/
 DATE=`date --iso-8601=seconds`
 NAME=${CLASS}_${MODEL}_${DATE}
 
