@@ -4,9 +4,10 @@ RESULTS_DIR='./results/packages'
 # dataset
 CLASS='packages'
 NAME='packages_bicycle_gan_2019-02-01T09:24:07+01:00'
+NAME='packages_bicycle_gan_2019-02-04T11:22:29+01:00'
 CHECKPOINTS_DIR='./checkpoints/'${CLASS}'/'
 DIRECTION='BtoA'
-LOAD_SIZE=600
+LOAD_SIZE=256
 CROP_SIZE=256
 INPUT_NC=3  # number of channels in the input image
 ASPECT_RATIO=1.0 # change aspect ratio for the test images

@@ -4,9 +4,9 @@ MODEL='bicycle_gan'
 CLASS='packages'
 NZ=8
 DIRECTION='BtoA'
-LOAD_SIZE=600
+LOAD_SIZE=256
 CROP_SIZE=256
-SAVE_EPOCH=5
+SAVE_EPOCH=50
 INPUT_NC=3
 NITER=200
 NITER_DECAY=200
@@ -36,4 +36,6 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --input_nc ${INPUT_NC} \
   --niter ${NITER} \
   --niter_decay ${NITER_DECAY} \
+  --batch_size 48 \
+  --num_threads 12 \
   --use_dropout
