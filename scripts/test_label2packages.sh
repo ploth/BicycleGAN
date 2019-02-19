@@ -5,6 +5,7 @@ RESULTS_DIR='./results/packages'
 CLASS='packages'
 NAME='packages_bicycle_gan_2019-02-01T09:24:07+01:00'
 NAME='packages_bicycle_gan_2019-02-04T11:22:29+01:00'
+NAME='packages_bicycle_gan_2019-02-18T14:44:49+01:00'
 CHECKPOINTS_DIR='./checkpoints/'${CLASS}'/'
 DIRECTION='BtoA'
 LOAD_SIZE=256
