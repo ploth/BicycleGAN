@@ -3,7 +3,7 @@ MODEL='bicycle_gan'
 # dataset details
 CLASS='packages'
 NZ=8
-DIRECTION='BtoA'
+DIRECTION='AtoB'
 LOAD_SIZE=256
 CROP_SIZE=256
 SAVE_EPOCH=50
