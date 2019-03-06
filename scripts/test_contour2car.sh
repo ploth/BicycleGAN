@@ -1,12 +1,8 @@
 set -ex
 
 # dataset
-CLASS='packages'
-NAME='packages_bicycle_gan_2019-02-01T09:24:07+01:00'
-NAME='packages_bicycle_gan_2019-02-04T11:22:29+01:00'
-NAME='packages_bicycle_gan_2019-02-18T14:44:49+01:00'
-NAME='packages_bicycle_gan_2019-02-19T10:41:09+01:00'
-NAME='packages_bicycle_gan_2019-02-26T14:28:41+01:00'
+CLASS='cars'
+NAME='cars_bicycle_gan_2019-03-05T15:47:42+01:00'
 RESULTS_DIR='./results/'$NAME
 CHECKPOINTS_DIR='./checkpoints/'${CLASS}'/'
 DIRECTION='BtoA'
@@ -24,8 +20,8 @@ NUM_SAMPLES=10 # number of samples per input images
 CUDA_VISIBLE_DEVICES=${GPU_ID} python ./test.py \
   --dataroot ./datasets/${CLASS} \
   --results_dir ${RESULTS_DIR} \
-  --checkpoints_dir ./pretrained_models/ \
-  --name ${CLASS} \
+  --checkpoints_dir ${CHECKPOINTS_DIR} \
+  --name ${NAME} \
   --direction ${DIRECTION} \
   --load_size ${LOAD_SIZE} \
   --crop_size ${CROP_SIZE} \
