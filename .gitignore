@@ -4,6 +4,7 @@
 *.pyc
 debug*
 datasets/
+trainings/
 videos/
 checkpoints/
 pretrained_models/
