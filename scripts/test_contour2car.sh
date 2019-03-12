@@ -2,7 +2,11 @@ set -ex
 
 # dataset
 CLASS='cars'
+NZ=4
 NAME='cars_bicycle_gan_2019-03-05T15:47:42+01:00'
+NAME='cars_bicycle_gan_2019-03-06T10:25:15+01:00'
+NAME='cars_bicycle_gan_2019-03-07T15:43:33+01:00'
+NAME='cars_bicycle_gan_2019-03-12T16:22:20+01:00'
 RESULTS_DIR='./results/'$NAME
 CHECKPOINTS_DIR='./checkpoints/'${CLASS}'/'
 DIRECTION='BtoA'
@@ -25,6 +29,7 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python ./test.py \
   --direction ${DIRECTION} \
   --load_size ${LOAD_SIZE} \
   --crop_size ${CROP_SIZE} \
+  --nz ${NZ} \
   --input_nc ${INPUT_NC} \
   --num_test ${NUM_TEST} \
   --n_samples ${NUM_SAMPLES} \

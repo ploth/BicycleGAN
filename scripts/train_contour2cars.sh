@@ -2,7 +2,7 @@ set -ex
 MODEL='bicycle_gan'
 # dataset details
 CLASS='cars'
-NZ=8
+NZ=4
 DIRECTION='BtoA'
 LOAD_SIZE=256
 CROP_SIZE=256
