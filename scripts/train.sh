@@ -22,6 +22,10 @@ echo \
   | cat - $CONFIG > $TMPFILE
 mv $TMPFILE $DEST/config.sh
 
+# Backup scripts to be safe
+cp ./scripts/train.sh $DEST
+cp ./scripts/test.sh $DEST
+
 CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --display_id ${DISPLAY_ID} \
   --dataroot ${DATAROOT} \
