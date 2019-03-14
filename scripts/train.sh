@@ -43,4 +43,9 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --niter_decay ${NITER_DECAY} \
   --batch_size ${BATCH_SIZE} \
   --num_threads ${NUM_THREADS} \
+  --lambda_L1 ${LL1} \
+  --lambda_GAN ${LGAN} \
+  --lambda_GAN2 ${LGAN2} \
+  --lambda_z ${LZ} \
+  --lambda_kl ${LKL} \
   --use_dropout
