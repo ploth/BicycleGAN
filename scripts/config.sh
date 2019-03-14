@@ -1,10 +1,9 @@
 # General
-MODEL='bicycle_gan'
 GPU_ID=0
 DISPLAY_ID=-1
 PORT=2005
 DATAROOT=./datasets/${CLASS}
-CHECKPOINTS_DIR=$DEST/checkpoints/${CLASS}
+CHECKPOINTS_DIR=$DEST/checkpoints
 
 # Parameter
 DIRECTION='BtoA'
