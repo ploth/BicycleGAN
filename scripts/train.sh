@@ -1,19 +1,26 @@
-# Load default configuration
-CONFIG=./scripts/config.sh
-source $CONFIG
-
+set -x
 # Make specific configuration
 CLASS=$1
+MODEL='bicycle_gan'
 DATE=`date --iso-8601=seconds`
 NAME=${CLASS}_${MODEL}_${DATE}
 DEST=./trainings/$NAME
 
+# Load default configuration
+CONFIG=./scripts/config.sh
+source $CONFIG
+
 # Export specific configuration
 mkdir -p $DEST
-cp $CONFIG $DEST
-cat 'CLASS='$CLASS >> $DEST/config.sh
-cat 'DATE='$DATE >> $DEST/config.sh
-cat 'NAME='$NAME >> $DEST/config.sh
+TMPFILE=/tmp/config.tmp
+echo \
+  'MODEL='$MODEL$'\n' \
+  'CLASS='$CLASS$'\n' \
+  'DATE='$DATE$'\n' \
+  'NAME='$NAME$'\n' \
+  'DEST='$DEST$'\n' \
+  | cat - $CONFIG > $TMPFILE
+mv $TMPFILE $DEST/config.sh
 
 CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --display_id ${DISPLAY_ID} \
