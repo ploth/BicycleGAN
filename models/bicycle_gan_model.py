@@ -14,7 +14,7 @@ class BiCycleGANModel(BaseModel):
 
         BaseModel.__init__(self, opt)
         # specify the training losses you want to print out. The program will call base_model.get_current_losses
-        self.loss_names = ['G_GAN', 'D', 'G_GAN2', 'D2', 'G_L1', 'z_L1', 'kl']
+        self.loss_names = ['G_GAN', 'D', 'G_GAN2', 'D2', 'G_L1', 'G_IL1', 'z_L1', 'kl']
         # specify the images you want to save/display. The program will call base_model.get_current_visuals
         self.visual_names = ['real_A_encoded', 'real_B_encoded', 'fake_B_random', 'fake_B_encoded']
         # specify the models you want to save to the disk. The program will call base_model.save_networks and base_model.load_networks
@@ -182,9 +182,16 @@ class BiCycleGANModel(BaseModel):
         # 3, reconstruction |(E(G(A, z_random)))-z_random|
         if self.opt.lambda_z > 0.0:
             self.loss_z_L1 = torch.mean(torch.abs(self.mu2 - self.z_random)) * self.opt.lambda_z
-            self.loss_z_L1.backward()
         else:
             self.loss_z_L1 = 0.0
+        # penalty for similar images
+        if self.opt.lambda_IL1 > 0.0:
+            self.loss_G_IL1 = 1 / self.criterionL1(self.fake_B_random, self.real_B_encoded) * self.opt.lambda_IL1
+        else:
+            self.loss_G_IL1 = 0.0
+
+        self.loss_G_alone = self.loss_z_L1 + self.loss_G_IL1
+        self.loss_G_alone.backward()
 
     def update_G_and_E(self):
         # update G and E
