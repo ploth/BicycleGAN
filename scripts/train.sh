@@ -44,6 +44,7 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --batch_size ${BATCH_SIZE} \
   --num_threads ${NUM_THREADS} \
   --lambda_L1 ${LL1} \
+  --lambda_IL1 ${IL1} \
   --lambda_GAN ${LGAN} \
   --lambda_GAN2 ${LGAN2} \
   --lambda_z ${LZ} \
