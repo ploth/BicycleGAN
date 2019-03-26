@@ -1,3 +1,5 @@
+#!/usr/bin/zsh
+
 set -x
 # Make specific configuration
 CLASS=$1

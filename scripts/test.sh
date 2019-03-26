@@ -1,3 +1,5 @@
+#!/usr/bin/zsh
+
 # Path to configuration file is first argument
 source $1
 
