@@ -1,4 +1,4 @@
-#!/usr/bin/zsh
+#!/usr/bin/env zsh
 
 set -x
 # Make specific configuration
@@ -45,6 +45,7 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --niter_decay ${NITER_DECAY} \
   --batch_size ${BATCH_SIZE} \
   --num_threads ${NUM_THREADS} \
+  --activate_cLR ${ACTIVATE_CLR} \
   --lambda_L1 ${LL1} \
   --lambda_IL1 ${IL1} \
   --lambda_GAN ${LGAN} \
