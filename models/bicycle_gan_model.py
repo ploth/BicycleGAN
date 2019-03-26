@@ -210,14 +210,14 @@ class BiCycleGANModel(BaseModel):
             self.optimizer_G.step()
 
     def update_lambdas(self, epoch):
-        if epoch <= self.opt.activate_cLR:
-            self.lambda_IL1 = self.opt.lambda_IL1
-            self.lambda_GAN2 = self.opt.lambda_GAN2
-            self.lambda_z = self.opt.lambda_z
-        else:
+        if epoch < self.opt.activate_cLR:
             self.lambda_IL1 = 0.0
             self.lambda_GAN2 = 0.0
             self.lambda_z = 0.0
+        else:
+            self.lambda_IL1 = self.opt.lambda_IL1
+            self.lambda_GAN2 = self.opt.lambda_GAN2
+            self.lambda_z = self.opt.lambda_z
 
     def optimize_parameters(self, epoch):
         self.update_lambdas(epoch)
