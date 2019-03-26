@@ -26,6 +26,7 @@ class TrainOptions(BaseOptions):
         parser.add_argument('--lr_policy', type=str, default='linear', help='learning rate policy: linear | step | plateau | cosine')
         parser.add_argument('--beta1', type=float, default=0.5, help='momentum term of adam')
         parser.add_argument('--lr_decay_iters', type=int, default=100, help='multiply by a gamma every lr_decay_iters iterations')
+        parser.add_argument('--activate_cLR', type=int, default=0, help='The epoch in which the cLR part is switched on (starts to train)')
         # lambda parameters
         parser.add_argument('--lambda_L1', type=float, default=10.0, help='weight for |B-G(A, E(B))|')
         parser.add_argument('--lambda_IL1', type=float, default=10.0, help='weight for 1/|B-G(A, random_z)|')

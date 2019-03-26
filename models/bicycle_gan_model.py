@@ -120,7 +120,7 @@ class BiCycleGANModel(BaseModel):
             self.real_data_random = self.real_B_random
 
         # compute z_predict
-        if self.opt.lambda_z > 0.0:
+        if self.lambda_z > 0.0:
             self.mu2, logvar2 = self.netE(self.fake_B_random)  # mu2 is a point estimate
 
     def backward_D(self, netD, real, fake):
@@ -147,9 +147,9 @@ class BiCycleGANModel(BaseModel):
         # 1, G(A) should fool D
         self.loss_G_GAN = self.backward_G_GAN(self.fake_data_encoded, self.netD, self.opt.lambda_GAN)
         if self.opt.use_same_D:
-            self.loss_G_GAN2 = self.backward_G_GAN(self.fake_data_random, self.netD, self.opt.lambda_GAN2)
+            self.loss_G_GAN2 = self.backward_G_GAN(self.fake_data_random, self.netD, self.lambda_GAN2)
         else:
-            self.loss_G_GAN2 = self.backward_G_GAN(self.fake_data_random, self.netD2, self.opt.lambda_GAN2)
+            self.loss_G_GAN2 = self.backward_G_GAN(self.fake_data_random, self.netD2, self.lambda_GAN2)
         # 2. KL loss
         if self.opt.lambda_kl > 0.0:
             self.loss_kl = torch.sum(1 + self.logvar - self.mu.pow(2) - self.logvar.exp()) * (-0.5 * self.opt.lambda_kl)
@@ -174,20 +174,20 @@ class BiCycleGANModel(BaseModel):
                 self.loss_D2, self.losses_D2 = self.backward_D(self.netD, self.real_data_random, self.fake_data_random)
             self.optimizer_D.step()
 
-        if self.opt.lambda_GAN2 > 0.0 and not self.opt.use_same_D:
+        if self.lambda_GAN2 > 0.0 and not self.opt.use_same_D:
             self.optimizer_D2.zero_grad()
             self.loss_D2, self.losses_D2 = self.backward_D(self.netD2, self.real_data_random, self.fake_data_random)
             self.optimizer_D2.step()
 
     def backward_G_alone(self):
         # 3, reconstruction |(E(G(A, z_random)))-z_random|
-        if self.opt.lambda_z > 0.0:
-            self.loss_z_L1 = torch.mean(torch.abs(self.mu2 - self.z_random)) * self.opt.lambda_z
+        if self.lambda_z > 0.0:
+            self.loss_z_L1 = torch.mean(torch.abs(self.mu2 - self.z_random)) * self.lambda_z
         else:
             self.loss_z_L1 = 0.0
         # penalty for similar images
-        if self.opt.lambda_IL1 > 0.0:
-            self.loss_G_IL1 = self.criterionL2(self.z_random, self.z_encoded) / self.criterionL1(self.fake_B_random, self.real_B_encoded) * self.opt.lambda_IL1
+        if self.lambda_IL1 > 0.0:
+            self.loss_G_IL1 = self.criterionL2(self.z_random, self.z_encoded) / self.criterionL1(self.fake_B_random, self.real_B_encoded) * self.lambda_IL1
         else:
             self.loss_G_IL1 = 0.0
 
@@ -203,13 +203,24 @@ class BiCycleGANModel(BaseModel):
         self.optimizer_G.step()
         self.optimizer_E.step()
         # update G only
-        if self.opt.lambda_z > 0.0:
+        if self.lambda_z > 0.0:
             self.optimizer_G.zero_grad()
             self.optimizer_E.zero_grad()
             self.backward_G_alone()
             self.optimizer_G.step()
 
-    def optimize_parameters(self):
+    def update_lambdas(self, epoch):
+        if epoch <= self.opt.activate_cLR:
+            self.lambda_IL1 = self.opt.lambda_IL1
+            self.lambda_GAN2 = self.opt.lambda_GAN2
+            self.lambda_z = self.opt.lambda_z
+        else:
+            self.lambda_IL1 = 0.0
+            self.lambda_GAN2 = 0.0
+            self.lambda_z = 0.0
+
+    def optimize_parameters(self, epoch):
+        self.update_lambdas(epoch)
         self.forward()
         self.update_G_and_E()
         self.update_D()

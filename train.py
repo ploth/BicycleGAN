@@ -45,7 +45,7 @@ if __name__ == '__main__':
             if not model.is_train():      # if this batch of input data is enough for training.
                 print('skip this batch')
                 continue
-            model.optimize_parameters()   # calculate loss functions, get gradients, update network weights
+            model.optimize_parameters(epoch)   # calculate loss functions, get gradients, update network weights
 
             if total_iters % opt.display_freq == 0:   # display images on visdom and save images to a HTML file
                 save_result = total_iters % opt.update_html_freq == 0
