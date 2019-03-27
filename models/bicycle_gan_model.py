@@ -174,10 +174,13 @@ class BiCycleGANModel(BaseModel):
                 self.loss_D2, self.losses_D2 = self.backward_D(self.netD, self.real_data_random, self.fake_data_random)
             self.optimizer_D.step()
 
-        if self.lambda_GAN2 > 0.0 and not self.opt.use_same_D:
-            self.optimizer_D2.zero_grad()
-            self.loss_D2, self.losses_D2 = self.backward_D(self.netD2, self.real_data_random, self.fake_data_random)
-            self.optimizer_D2.step()
+        if not self.opt.use_same_D:
+            if self.lambda_GAN2 > 0.0:
+                self.optimizer_D2.zero_grad()
+                self.loss_D2, self.losses_D2 = self.backward_D(self.netD2, self.real_data_random, self.fake_data_random)
+                self.optimizer_D2.step()
+            else:
+                self.loss_D2 = 0.0
 
     def backward_G_alone(self):
         # 3, reconstruction |(E(G(A, z_random)))-z_random|
