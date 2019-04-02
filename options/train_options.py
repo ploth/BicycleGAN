@@ -29,7 +29,7 @@ class TrainOptions(BaseOptions):
         parser.add_argument('--activate_cLR', type=int, default=0, help='The epoch in which the cLR part is switched on (starts to train)')
         # lambda parameters
         parser.add_argument('--lambda_L1', type=float, default=10.0, help='weight for |B-G(A, E(B))|')
-        parser.add_argument('--lambda_IL1', type=float, default=10.0, help='weight for 1/|B-G(A, random_z)|')
+        parser.add_argument('--lambda_IL1', type=float, default=0.1, help='weight for 1/|B-G(A, random_z)|')
         parser.add_argument('--lambda_GAN', type=float, default=1.0, help='weight on D loss. D(G(A, E(B)))')
         parser.add_argument('--lambda_GAN2', type=float, default=1.0, help='weight on D2 loss, D(G(A, random_z))')
         parser.add_argument('--lambda_z', type=float, default=0.5, help='weight for ||E(G(random_z)) - random_z||')
