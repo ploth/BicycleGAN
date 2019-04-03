@@ -5,6 +5,11 @@ set -x
 # Path to configuration file is first argument
 source $1
 
+if [[ $2 == '' ]]; then
+  echo "Specify epoch (second argument)!"
+  return
+fi
+
 CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --display_id ${DISPLAY_ID} \
   --dataroot ${DATAROOT} \
@@ -30,4 +35,5 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --lambda_z ${LZ} \
   --lambda_kl ${LKL} \
   --use_dropout \
-  --continue_train
+  --continue_train \
+  --epoch_count $2
