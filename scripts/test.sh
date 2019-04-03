@@ -1,5 +1,7 @@
 #!/usr/bin/env zsh
 
+set -x
+
 # Path to configuration file is first argument
 source $1
 
