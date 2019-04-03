@@ -30,4 +30,4 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --lambda_z ${LZ} \
   --lambda_kl ${LKL} \
   --use_dropout \
-  --continue-train
+  --continue_train
