@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
 import sys
+import datetime
 import torch.utils.data
-from PIL import Image
-from data.base_dataset import get_params, get_transform
 
-from itertools import islice
+from PIL import Image
+from pathlib import Path
+from data.base_dataset import get_params, get_transform
 
 from PySide2.QtWidgets import (QApplication, QLabel, QPushButton, QVBoxLayout,
                                QWidget, QFileDialog)
@@ -29,33 +30,50 @@ class LatentExplorer(QWidget):
         # BicycleGAN
         self.model = model
         self.opt = opt
+
+        # Variables
         self.input_path = None
+        self.output_path = None
         self.z = None
+        self.base_dir = Path(__file__).absolute().parents[0]
 
         # Buttons
         self.button_load_image = QPushButton("Load image")
         self.button_generate = QPushButton("Generate")
-        self.button_random_z = QPushButton("Random z")
+        self.button_generate_random_z = QPushButton("Generate random z")
+        self.button_generate_random_sample = QPushButton("Generate random sample")
 
         # Text
         self.text_input_path = QLabel(self.input_path)
         self.text_input_path.setAlignment(Qt.AlignCenter)
+        self.text_output_path = QLabel(self.output_path)
+        self.text_output_path.setAlignment(Qt.AlignCenter)
         self.text_z = QLabel(self.z)
         self.text_z.setAlignment(Qt.AlignCenter)
+
+        # Images
+        #  self.image_input = QLabel(se
+
+        # Drawing
+        #  self.pixmap = QPixmap()
+        #  self.pixmap.fill('#ffffff')
 
         # Layout
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.text_input_path)
+        self.layout.addWidget(self.text_output_path)
         self.layout.addWidget(self.text_z)
         self.layout.addWidget(self.button_load_image)
-        self.layout.addWidget(self.button_random_z)
+        self.layout.addWidget(self.button_generate_random_z)
         self.layout.addWidget(self.button_generate)
+        self.layout.addWidget(self.button_generate_random_sample)
         self.setLayout(self.layout)
 
         # Connecting the signals
         self.button_load_image.clicked.connect(self.choose_image)
-        self.button_random_z.clicked.connect(self.generate_random_z)
+        self.button_generate_random_z.clicked.connect(self.generate_random_z)
         self.button_generate.clicked.connect(self.generate)
+        self.button_generate_random_sample.clicked.connect(self.generate_random_sample)
 
         # Hacks for testing
         self.set_input_path('/home/ploth/projects/pair-images/files/1fd35396a5437cf4397fdfc5dd4b0973c3865f5d_contour.jpg')
@@ -69,6 +87,10 @@ class LatentExplorer(QWidget):
     def set_input_path(self, path):
         self.input_path = path
         self.text_input_path.setText(self.input_path)
+
+    def set_output_path(self, path):
+        self.output_path = path
+        self.text_output_path.setText(self.output_path)
 
     def choose_image(self):
         # Get path from file chooser
@@ -106,10 +128,16 @@ class LatentExplorer(QWidget):
         self.z = self.model.get_z_random(1, self.opt.nz)
         self.text_z.setText(self.z.__str__())
 
+    def generate_random_sample(self):
+        self.generate_random_z()
+        self.generate()
+
     def test(self):
         _, self.fake_B, _ = self.model.test(self.z, encode=False)
         self.np_image = util.tensor2im(self.fake_B)
-        util.save_image(self.np_image, './test.png')
+        current_date = datetime.datetime.today()
+        self.set_output_path(str(self.base_dir / 'latent_explorer' / str(current_date.isoformat())) + '.png')
+        util.save_image(self.np_image, self.output_path)
 
 
 if __name__ == "__main__":
