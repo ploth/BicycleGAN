@@ -21,9 +21,11 @@ from data.aligned_dataset import AlignedDataset
 
 
 class DrawArea(QWidget):
-    def __init__(self, opt):
+    def __init__(self, latent_explorer, opt, drawing_path):
         super().__init__()
+        self.latent_explorer = latent_explorer
         self.opt = opt
+        self.drawing_path = drawing_path
         self.drawing = False
         self.lastPoint = QPoint()
         self.image = QPixmap()
@@ -33,6 +35,9 @@ class DrawArea(QWidget):
     def set_image(self, path):
         self.image = QPixmap(path)
         self.repaint()
+
+    def export_image(self):
+        self.image.save(str(self.drawing_path), self.drawing_path.suffix[1:])
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -46,12 +51,18 @@ class DrawArea(QWidget):
     def mouseMoveEvent(self, event):
         if event.buttons() and Qt.LeftButton and self.drawing:
             painter = QPainter(self.image)
-            painter.setPen(QPen(Qt.red, 3, Qt.SolidLine))
+            painter.setPen(QPen(Qt.black, 1, Qt.SolidLine))
             painter.drawLine(self.lastPoint, event.pos())
             self.lastPoint = event.pos()
             self.update()
 
+    def test_with_drawing(self):
+        self.export_image()
+        self.latent_explorer.set_input_path(str(self.drawing_path))
+        self.latent_explorer.load_input_image()
+
     def mouseReleaseEvent(self, event):
+        self.test_with_drawing()
         if event.button == Qt.LeftButton:
             self.drawing = False
 
@@ -75,6 +86,7 @@ class LatentExplorer(QWidget):
         self.drawing = False
         self.lastPoint = QPoint()
         self.base_dir = Path(__file__).absolute().parents[0]
+        self.drawing_path = self.base_dir/'latent_explorer'/'drawing.png'
 
         # Buttons
         self.button_load_image = QPushButton("Load image")
@@ -88,7 +100,7 @@ class LatentExplorer(QWidget):
         self.text_z.setAlignment(Qt.AlignCenter)
 
         # Images
-        self.image_draw_area = DrawArea(self.opt)
+        self.image_draw_area = DrawArea(self, self.opt, self.drawing_path)
         self.image_generated = QLabel()
 
         # Layout
@@ -162,6 +174,8 @@ class LatentExplorer(QWidget):
         self.generate()
 
     def test(self):
+        if self.z is None:
+            self.generate_random_z()
         _, self.fake_B, _ = self.model.test(self.z, encode=False)
         self.np_image = util.tensor2im(self.fake_B)
         current_date = datetime.datetime.today()
