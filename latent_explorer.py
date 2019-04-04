@@ -32,6 +32,7 @@ class DrawArea(QWidget):
 
     def set_image(self, path):
         self.image = QPixmap(path)
+        self.repaint()
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -107,13 +108,6 @@ class LatentExplorer(QWidget):
         self.button_generate.clicked.connect(self.generate)
         self.button_generate_random_sample.clicked.connect(
             self.generate_random_sample)
-
-        # Hacks for testing
-        self.set_input_path(
-            '/home/ploth/projects/pair-images/files/1fd35396a5437cf4397fdfc5dd4b0973c3865f5d_contour.jpg'
-        )
-        self.load_input_image()
-        self.generate_random_z()
 
     def generate(self):
         self.model.set_input(self.data)
