@@ -83,10 +83,6 @@ class LatentExplorer(QWidget):
             "Generate random sample")
 
         # Text
-        self.text_input_path = QLabel(self.input_path)
-        self.text_input_path.setAlignment(Qt.AlignCenter)
-        self.text_output_path = QLabel(self.output_path)
-        self.text_output_path.setAlignment(Qt.AlignCenter)
         self.text_z = QLabel(self.z)
         self.text_z.setAlignment(Qt.AlignCenter)
 
@@ -98,8 +94,6 @@ class LatentExplorer(QWidget):
         self.layout = QGridLayout()
         self.layout.addWidget(self.image_draw_area)
         self.layout.addWidget(self.image_generated)
-        self.layout.addWidget(self.text_input_path)
-        self.layout.addWidget(self.text_output_path)
         self.layout.addWidget(self.text_z)
         self.layout.addWidget(self.button_load_image)
         self.layout.addWidget(self.button_generate_random_z)
@@ -127,11 +121,9 @@ class LatentExplorer(QWidget):
 
     def set_input_path(self, path):
         self.input_path = path
-        self.text_input_path.setText(self.input_path)
 
     def set_output_path(self, path):
         self.output_path = path
-        self.text_output_path.setText(self.output_path)
 
     def choose_image(self):
         # Get path from file chooser
