@@ -21,27 +21,42 @@ from data.aligned_dataset import AlignedDataset
 
 
 class DrawArea(QWidget):
-    def __init__(self, latent_explorer, opt, drawing_path):
+    def __init__(self, opt, generator_input_path):
         super().__init__()
-        self.latent_explorer = latent_explorer
+
+        # Options
         self.opt = opt
-        self.drawing_path = drawing_path
-        self.drawing = False
-        self.lastPoint = QPoint()
-        self.image = QPixmap()
+
+        # Paths
+        self.generator_input_path = generator_input_path
+
+        # Display
+        self.pixmap = QPixmap()
         self.setFixedSize(self.opt.load_size, self.opt.load_size)
         self.show()
 
-    def set_image(self, path):
-        self.image = QPixmap(path)
-        self.repaint()
+        # File dialog
+        self.dialog = QFileDialog(self)
+        self.dialog.setFileMode(QFileDialog.ExistingFile)
+        self.dialog.setNameFilter("Images (*.png *.jpg)")
 
-    def export_image(self):
-        self.image.save(str(self.drawing_path), self.drawing_path.suffix[1:])
+        # Drawing utils
+        self.drawing = False
+        self.lastPoint = QPoint()
+
+    def export_pixmap(self, path):
+        self.pixmap.save(str(path), path.suffix[1:])
+
+    def file_chooser(self):
+        # Get path from file chooser
+        self.dialog.exec_()
+        path = self.dialog.selectedFiles()
+        self.__process_new_pixmap(*path)
+        self.export_pixmap(self.generator_input_path)
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.drawPixmap(self.rect(), self.image)
+        painter.drawPixmap(self.rect(), self.pixmap)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -50,43 +65,116 @@ class DrawArea(QWidget):
 
     def mouseMoveEvent(self, event):
         if event.buttons() and Qt.LeftButton and self.drawing:
-            painter = QPainter(self.image)
+            painter = QPainter(self.pixmap)
             painter.setPen(QPen(Qt.black, 1, Qt.SolidLine))
             painter.drawLine(self.lastPoint, event.pos())
             self.lastPoint = event.pos()
             self.update()
 
-    def test_with_drawing(self):
-        self.export_image()
-        self.latent_explorer.set_input_path(str(self.drawing_path))
-        self.latent_explorer.load_input_image()
-
     def mouseReleaseEvent(self, event):
-        self.test_with_drawing()
+        self.export_pixmap(self.generator_input_path)
         if event.button == Qt.LeftButton:
             self.drawing = False
+
+    def __process_new_pixmap(self, path):
+        self.pixmap = QPixmap(path)
+        self.repaint()
+
+
+class Generator(QWidget):
+    def __init__(self, opt, generator_input_path, generator_output_path,
+                 model):
+        super().__init__()
+
+        # Options
+        self.opt = opt
+
+        # Paths
+        self.generator_input_path = generator_input_path
+        self.generator_output_path = generator_output_path
+        self.input_path = None
+        self.output_path = None
+
+        # Display
+        self.pixmap = QPixmap()
+        self.setFixedSize(self.opt.load_size, self.opt.load_size)
+        self.show()
+
+        # BicycleGAN
+        self.model = model
+        self.opt = opt
+        self.z = None
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.drawPixmap(self.rect(), self.pixmap)
+
+    def export_pixmap(self, path):
+        self.pixmap.save(str(path), path.suffix[1:])
+
+    def generate_random_z(self):
+        self.z = self.model.get_z_random(1, self.opt.nz)
+
+    def generate(self):
+        # Prepare model input
+        data = self.__prepare_model_input(
+            str(self.generator_input_path), self.opt)
+
+        # Set model input
+        self.model.set_input(data)
+
+        # Run model
+        self.__run_model()
+
+        # Display model's output
+        self.__process_new_pixmap(str(self.generator_output_path))
+
+    def __run_model(self):
+        if self.z is None:
+            self.generate_random_z()
+
+        # Run model
+        _, self.fake_B, _ = self.model.test(self.z, encode=False)
+
+        # Convert model output
+        image = util.tensor2im(self.fake_B)
+
+        # Save output picture
+        util.save_image(image, self.generator_output_path)
+
+    def __process_new_pixmap(self, path):
+        self.pixmap = QPixmap(path)
+        self.repaint()
+
+    def __prepare_model_input(self, path, opt):
+        # Load image
+        image = Image.open(path).convert('RGB')
+        # Convert image to tensor
+        input_tensor = self.__tensor_from_image(image, opt)
+        # Prepare GAN input
+        return self.__data_from_tensor(input_tensor, path)
+
+    def __tensor_from_image(self, image, opt):
+        parameters = get_params(opt, image.size)
+        #TODO Support for BtoA only!
+        transform = get_transform(
+            opt, parameters, grayscale=(opt.input_nc == 1))
+        tensor = transform(image)
+        # Simulate batch of size 1
+        return torch.unsqueeze(transform(image), 0)
+
+    def __data_from_tensor(self, tensor, path):
+        return {'A': tensor, 'B': tensor, 'A_paths': path, 'B_paths': path}
 
 
 class LatentExplorer(QWidget):
     def __init__(self, model, opt):
         QWidget.__init__(self)
 
-        self.dialog = QFileDialog(self)
-        self.dialog.setFileMode(QFileDialog.ExistingFile)
-        self.dialog.setNameFilter("Images (*.png *.jpg)")
-
-        # BicycleGAN
-        self.model = model
-        self.opt = opt
-
-        # Variables
-        self.input_path = None
-        self.output_path = None
-        self.z = None
-        self.drawing = False
-        self.lastPoint = QPoint()
+        # Paths
         self.base_dir = Path(__file__).absolute().parents[0]
-        self.drawing_path = self.base_dir/'latent_explorer'/'drawing.png'
+        self.generator_input_path = self.base_dir / 'latent_explorer' / 'input.png'
+        self.generator_output_path = self.base_dir / 'latent_explorer' / 'output.png'
 
         # Buttons
         self.button_load_image = QPushButton("Load image")
@@ -96,18 +184,20 @@ class LatentExplorer(QWidget):
             "Generate random sample")
 
         # Text
+        self.z = None
         self.text_z = QLabel(self.z)
         self.text_z.setAlignment(Qt.AlignCenter)
 
         # Images
-        self.image_draw_area = DrawArea(self, self.opt, self.drawing_path)
-        self.image_generated = QLabel()
+        self.draw_area = DrawArea(opt, self.generator_input_path)
+        self.generator = Generator(opt, self.generator_input_path,
+                                   self.generator_output_path, model)
 
         # Layout
         self.layout = QGridLayout()
-        self.layout.addWidget(self.image_draw_area)
-        self.layout.addWidget(self.image_generated)
+        self.layout.addWidget(self.draw_area)
         self.layout.addWidget(self.text_z)
+        self.layout.addWidget(self.generator)
         self.layout.addWidget(self.button_load_image)
         self.layout.addWidget(self.button_generate_random_z)
         self.layout.addWidget(self.button_generate)
@@ -115,78 +205,23 @@ class LatentExplorer(QWidget):
         self.setLayout(self.layout)
 
         # Connecting the signals
-        self.button_load_image.clicked.connect(self.choose_image)
-        self.button_generate_random_z.clicked.connect(self.generate_random_z)
+        self.button_load_image.clicked.connect(self.draw_area.file_chooser)
+        self.button_generate_random_z.clicked.connect(
+            self.generator.generate_random_z)
         self.button_generate.clicked.connect(self.generate)
         self.button_generate_random_sample.clicked.connect(
             self.generate_random_sample)
 
+    def export_images(self):
+        pass
+
     def generate(self):
-        self.model.set_input(self.data)
-        self.test()
-
-    def set_input_path(self, path):
-        self.input_path = path
-
-    def set_output_path(self, path):
-        self.output_path = path
-
-    def choose_image(self):
-        # Get path from file chooser
-        self.dialog.exec_()
-        path = self.dialog.selectedFiles()
-        self.set_input_path(*path)
-        self.load_input_image()
-
-    def load_input_image(self):
-        # Load to draw area
-        self.image_draw_area.set_image(self.input_path)
-        # Load image
-        self.image = Image.open(self.input_path).convert('RGB')
-        # Convert image to tensor
-        self.tensor_from_image()
-        # Prepare GAN input
-        self.data_from_tensor()
-
-    def tensor_from_image(self):
-        parameters = get_params(self.opt, self.image.size)
-        #TODO Support for BtoA only!
-        transform = get_transform(
-            self.opt, parameters, grayscale=(self.opt.input_nc == 1))
-        tensor = transform(self.image)
-        # Simulate batch of size 1
-        self.input_tensor = torch.unsqueeze(transform(self.image), 0)
-
-    def data_from_tensor(self):
-        self.data = {
-            'A': self.input_tensor,
-            'B': self.input_tensor,
-            'A_paths': self.input_path,
-            'B_paths': self.input_path
-        }
-
-    def generate_random_z(self):
-        self.z = self.model.get_z_random(1, self.opt.nz)
-        self.text_z.setText(self.z.__str__())
+        self.generator.generate()
+        self.export_images()
 
     def generate_random_sample(self):
-        self.generate_random_z()
+        self.generator.generate_random_z()
         self.generate()
-
-    def test(self):
-        if self.z is None:
-            self.generate_random_z()
-        _, self.fake_B, _ = self.model.test(self.z, encode=False)
-        self.np_image = util.tensor2im(self.fake_B)
-        current_date = datetime.datetime.today()
-        self.set_output_path(
-            str(self.base_dir / 'latent_explorer' /
-                str(current_date.isoformat())) + '.png')
-        util.save_image(self.np_image, self.output_path)
-        self.set_generated_image(self.output_path)
-
-    def set_generated_image(self, path):
-        self.image_generated.setPixmap(QPixmap(path))
 
 
 if __name__ == "__main__":
