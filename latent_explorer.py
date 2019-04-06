@@ -28,6 +28,9 @@ class DrawArea(QWidget):
         # Options
         self.opt = opt
 
+        # Variables
+        self.image_loaded = False
+
         # Paths
         self.generator_input_path = generator_input_path
 
@@ -79,6 +82,7 @@ class DrawArea(QWidget):
 
     def __process_new_pixmap(self, path):
         self.pixmap = QPixmap(path)
+        self.image_loaded = True
         self.repaint()
 
 
@@ -211,7 +215,7 @@ class LatentExplorer(QWidget):
         # Text boxes
         self.text_boxes = [QLineEdit() for i in range(0, opt.nz)]
         for i, box in enumerate(self.text_boxes):
-            box.setText(str(self.sliders[i].value()))
+            box.setText(f'{self.sliders[i].value():.4f}')
 
         # Images
         self.draw_area = DrawArea(opt, self.generator_input_path)
@@ -221,11 +225,11 @@ class LatentExplorer(QWidget):
         # Layout
         self.layout = QGridLayout()
         self.layout.addWidget(self.draw_area)
-        self.layout.addWidget(self.check_box_live_update)
         for box, slider in zip(self.text_boxes, self.sliders):
             self.layout.addWidget(box)
             self.layout.addWidget(slider)
         self.layout.addWidget(self.generator)
+        self.layout.addWidget(self.check_box_live_update)
         self.layout.addWidget(self.button_load_image)
         self.layout.addWidget(self.button_reset_z)
         self.layout.addWidget(self.button_generate_random_z)
@@ -246,11 +250,14 @@ class LatentExplorer(QWidget):
             self.generate_random_sample)
 
     def export_images(self):
-        pass
+        now = datetime.datetime.today()
+        self.draw_area.export_pixmap(self.base_dir / 'latent_explorer' / str(str(now.isoformat()) + '_input.png'))
+        self.generator.export_pixmap(self.base_dir / 'latent_explorer' / str(str(now.isoformat()) + '_output.png'))
 
     def generate(self):
-        self.generator.generate()
-        self.export_images()
+        if self.draw_area.image_loaded:
+            self.generator.generate()
+            self.export_images()
 
     def reset_z(self):
         z = [0] * len(self.sliders)
@@ -263,9 +270,10 @@ class LatentExplorer(QWidget):
         self.update_input_widgets(*(z.tolist()))
 
     def generate_random_sample(self):
-        z = self.generator.generate_random_z()
-        self.generate()
-        self.update_input_widgets(*(z.tolist()))
+        if self.draw_area.image_loaded:
+            z = self.generator.generate_random_z()
+            self.generate()
+            self.update_input_widgets(*(z.tolist()))
 
     def update_input_widgets(self, values):
         for i, (box, slider) in enumerate(zip(self.text_boxes, self.sliders)):
@@ -278,7 +286,7 @@ class LatentExplorer(QWidget):
         for slider, box in zip(self.sliders, self.text_boxes):
             box.setText(f'{slider.value() / self.slider_factor:.4f}')
 
-        if self.check_box_live_update.isChecked:
+        if self.check_box_live_update.isChecked():
             self.generate()
 
     def text_boxes_edited(self):
@@ -286,7 +294,7 @@ class LatentExplorer(QWidget):
         for slider, box in zip(self.sliders, self.text_boxes):
             slider.setValue(float(box.text()) * self.slider_factor)
 
-        if self.check_box_live_update.isChecked:
+        if self.check_box_live_update.isChecked():
             self.generate()
 
 
