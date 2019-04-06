@@ -10,7 +10,7 @@ from data.base_dataset import get_params, get_transform
 
 from PySide2.QtWidgets import (QApplication, QLabel, QPushButton, QVBoxLayout,
                                QWidget, QFileDialog, QBoxLayout, QGridLayout,
-                               QSlider, QLineEdit)
+                               QSlider, QLineEdit, QCheckBox)
 from PySide2.QtGui import QPainter, QColor, QFont, QImage, QPixmap, QPen
 from PySide2.QtCore import Slot, Qt, QPoint, QRect
 
@@ -185,9 +185,14 @@ class LatentExplorer(QWidget):
         # Variables
         self.z = [0] * opt.nz
 
+        # Check boxes
+        self.check_box_live_update = QCheckBox("Live update")
+        self.check_box_live_update.setChecked(True)
+
         # Buttons
         self.button_load_image = QPushButton("Load image")
         self.button_generate = QPushButton("Generate")
+        self.button_reset_z = QPushButton("Reset z")
         self.button_generate_random_z = QPushButton("Generate random z")
         self.button_generate_random_sample = QPushButton(
             "Generate random sample")
@@ -216,11 +221,13 @@ class LatentExplorer(QWidget):
         # Layout
         self.layout = QGridLayout()
         self.layout.addWidget(self.draw_area)
+        self.layout.addWidget(self.check_box_live_update)
         for box, slider in zip(self.text_boxes, self.sliders):
             self.layout.addWidget(box)
             self.layout.addWidget(slider)
         self.layout.addWidget(self.generator)
         self.layout.addWidget(self.button_load_image)
+        self.layout.addWidget(self.button_reset_z)
         self.layout.addWidget(self.button_generate_random_z)
         self.layout.addWidget(self.button_generate)
         self.layout.addWidget(self.button_generate_random_sample)
@@ -232,6 +239,7 @@ class LatentExplorer(QWidget):
         for box in self.text_boxes:
             box.textEdited.connect(self.text_boxes_edited)
         self.button_load_image.clicked.connect(self.draw_area.file_chooser)
+        self.button_reset_z.clicked.connect(self.reset_z)
         self.button_generate_random_z.clicked.connect(self.generate_random_z)
         self.button_generate.clicked.connect(self.generate)
         self.button_generate_random_sample.clicked.connect(
@@ -243,6 +251,12 @@ class LatentExplorer(QWidget):
     def generate(self):
         self.generator.generate()
         self.export_images()
+
+    def reset_z(self):
+        z = [0] * len(self.sliders)
+        self.generator.set_z(z)
+        self.update_input_widgets(z)
+        self.generate()
 
     def generate_random_z(self):
         z = self.generator.generate_random_z()
@@ -264,10 +278,16 @@ class LatentExplorer(QWidget):
         for slider, box in zip(self.sliders, self.text_boxes):
             box.setText(f'{slider.value() / self.slider_factor:.4f}')
 
+        if self.check_box_live_update.isChecked:
+            self.generate()
+
     def text_boxes_edited(self):
         self.generator.set_z([float(box.text()) for box in self.text_boxes])
         for slider, box in zip(self.sliders, self.text_boxes):
             slider.setValue(float(box.text()) * self.slider_factor)
+
+        if self.check_box_live_update.isChecked:
+            self.generate()
 
 
 if __name__ == "__main__":
