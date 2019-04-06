@@ -9,7 +9,8 @@ from pathlib import Path
 from data.base_dataset import get_params, get_transform
 
 from PySide2.QtWidgets import (QApplication, QLabel, QPushButton, QVBoxLayout,
-                               QWidget, QFileDialog, QBoxLayout, QGridLayout)
+                               QWidget, QFileDialog, QBoxLayout, QGridLayout,
+                               QSlider, QLineEdit)
 from PySide2.QtGui import QPainter, QColor, QFont, QImage, QPixmap, QPen
 from PySide2.QtCore import Slot, Qt, QPoint, QRect
 
@@ -112,8 +113,13 @@ class Generator(QWidget):
     def export_pixmap(self, path):
         self.pixmap.save(str(path), path.suffix[1:])
 
+    def set_z(self, values):
+        device = torch.device('cuda', self.opt.gpu_ids[0])
+        self.z = torch.tensor([values], dtype=torch.float, device=device)
+
     def generate_random_z(self):
         self.z = self.model.get_z_random(1, self.opt.nz)
+        return self.z
 
     def generate(self):
         # Prepare model input
@@ -176,6 +182,9 @@ class LatentExplorer(QWidget):
         self.generator_input_path = self.base_dir / 'latent_explorer' / 'input.png'
         self.generator_output_path = self.base_dir / 'latent_explorer' / 'output.png'
 
+        # Variables
+        self.z = [0] * opt.nz
+
         # Buttons
         self.button_load_image = QPushButton("Load image")
         self.button_generate = QPushButton("Generate")
@@ -183,10 +192,21 @@ class LatentExplorer(QWidget):
         self.button_generate_random_sample = QPushButton(
             "Generate random sample")
 
-        # Text
-        self.z = None
-        self.text_z = QLabel(self.z)
-        self.text_z.setAlignment(Qt.AlignCenter)
+        # Sliders
+        self.slider_max = 3
+        self.slider_factor = 10000
+        self.sliders = [QSlider(Qt.Horizontal) for i in range(0, opt.nz)]
+        for slider in self.sliders:
+            slider.setMinimum(-self.slider_max * self.slider_factor)
+            slider.setMaximum(self.slider_max * self.slider_factor)
+            slider.setSingleStep(self.slider_factor / 100)
+            slider.setPageStep(self.slider_factor / 10)
+            slider.setValue(0)
+
+        # Text boxes
+        self.text_boxes = [QLineEdit() for i in range(0, opt.nz)]
+        for i, box in enumerate(self.text_boxes):
+            box.setText(str(self.sliders[i].value()))
 
         # Images
         self.draw_area = DrawArea(opt, self.generator_input_path)
@@ -196,7 +216,9 @@ class LatentExplorer(QWidget):
         # Layout
         self.layout = QGridLayout()
         self.layout.addWidget(self.draw_area)
-        self.layout.addWidget(self.text_z)
+        for box, slider in zip(self.text_boxes, self.sliders):
+            self.layout.addWidget(box)
+            self.layout.addWidget(slider)
         self.layout.addWidget(self.generator)
         self.layout.addWidget(self.button_load_image)
         self.layout.addWidget(self.button_generate_random_z)
@@ -205,9 +227,12 @@ class LatentExplorer(QWidget):
         self.setLayout(self.layout)
 
         # Connecting the signals
+        for slider in self.sliders:
+            slider.sliderMoved.connect(self.sliders_edited)
+        for box in self.text_boxes:
+            box.textEdited.connect(self.text_boxes_edited)
         self.button_load_image.clicked.connect(self.draw_area.file_chooser)
-        self.button_generate_random_z.clicked.connect(
-            self.generator.generate_random_z)
+        self.button_generate_random_z.clicked.connect(self.generate_random_z)
         self.button_generate.clicked.connect(self.generate)
         self.button_generate_random_sample.clicked.connect(
             self.generate_random_sample)
@@ -219,9 +244,30 @@ class LatentExplorer(QWidget):
         self.generator.generate()
         self.export_images()
 
+    def generate_random_z(self):
+        z = self.generator.generate_random_z()
+        self.update_input_widgets(*(z.tolist()))
+
     def generate_random_sample(self):
-        self.generator.generate_random_z()
+        z = self.generator.generate_random_z()
         self.generate()
+        self.update_input_widgets(*(z.tolist()))
+
+    def update_input_widgets(self, values):
+        for i, (box, slider) in enumerate(zip(self.text_boxes, self.sliders)):
+            box.setText(f'{values[i]:.4f}')
+            slider.setValue(values[i] * self.slider_factor)
+
+    def sliders_edited(self):
+        self.generator.set_z(
+            [slider.value() / self.slider_factor for slider in self.sliders])
+        for slider, box in zip(self.sliders, self.text_boxes):
+            box.setText(f'{slider.value() / self.slider_factor:.4f}')
+
+    def text_boxes_edited(self):
+        self.generator.set_z([float(box.text()) for box in self.text_boxes])
+        for slider, box in zip(self.sliders, self.text_boxes):
+            slider.setValue(float(box.text()) * self.slider_factor)
 
 
 if __name__ == "__main__":
@@ -242,7 +288,6 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     widget = LatentExplorer(model, opt)
-    widget.resize(1920, 1080)
     widget.show()
 
     sys.exit(app.exec_())
