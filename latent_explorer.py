@@ -46,7 +46,22 @@ class DrawArea(QWidget):
 
         # Drawing utils
         self.drawing = False
+        self.color = Qt.black
+        self.pen_size = 1
         self.lastPoint = QPoint()
+
+    def toggle_pen_eraser(self):
+        if self.color is Qt.black:
+            self.color = Qt.white
+            self.pen_size = 10
+        else:
+            self.color = Qt.black
+            self.pen_size = 1
+
+    def clear_page(self):
+        self.pixmap.fill(Qt.white)
+        self.export_pixmap(self.generator_input_path)
+        self.repaint()
 
     def export_pixmap(self, path):
         self.pixmap.save(str(path), path.suffix[1:])
@@ -70,7 +85,7 @@ class DrawArea(QWidget):
     def mouseMoveEvent(self, event):
         if event.buttons() and Qt.LeftButton and self.drawing:
             painter = QPainter(self.pixmap)
-            painter.setPen(QPen(Qt.black, 1, Qt.SolidLine))
+            painter.setPen(QPen(self.color, self.pen_size, Qt.SolidLine))
             painter.drawLine(self.lastPoint, event.pos())
             self.lastPoint = event.pos()
             self.update()
@@ -200,6 +215,8 @@ class LatentExplorer(QWidget):
         self.button_generate_random_z = QPushButton("Generate random z")
         self.button_generate_random_sample = QPushButton(
             "Generate random sample")
+        self.button_toggle_pen_eraser = QPushButton("Draw / Eraser")
+        self.button_clear_page = QPushButton("Clear page")
 
         # Sliders
         self.slider_max = 3
@@ -225,6 +242,8 @@ class LatentExplorer(QWidget):
         # Layout
         self.layout = QGridLayout()
         self.layout.addWidget(self.draw_area)
+        self.layout.addWidget(self.button_toggle_pen_eraser)
+        self.layout.addWidget(self.button_clear_page)
         for box, slider in zip(self.text_boxes, self.sliders):
             self.layout.addWidget(box)
             self.layout.addWidget(slider)
@@ -248,6 +267,8 @@ class LatentExplorer(QWidget):
         self.button_generate.clicked.connect(self.generate)
         self.button_generate_random_sample.clicked.connect(
             self.generate_random_sample)
+        self.button_toggle_pen_eraser.clicked.connect(self.draw_area.toggle_pen_eraser)
+        self.button_clear_page.clicked.connect(self.draw_area.clear_page)
 
     def export_images(self):
         now = datetime.datetime.today()
