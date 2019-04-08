@@ -216,7 +216,7 @@ class LatentExplorer(QWidget):
         self.button_generate_random_z = QPushButton("Generate random z")
         self.button_generate_random_sample = QPushButton(
             "Generate random sample")
-        self.button_toggle_pen_eraser = QPushButton("Draw / Eraser")
+        self.button_toggle_pen_eraser = QPushButton("Pen / Eraser")
         self.button_clear_page = QPushButton("Clear page")
         self.button_auto_explore = QPushButton("Auto explore")
 
