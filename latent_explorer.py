@@ -202,7 +202,8 @@ class LatentExplorer(QWidget):
         self.generator_output_path = self.base_dir / 'latent_explorer' / 'output.png'
 
         # Variables
-        self.z = [0] * opt.nz
+        self.opt = opt
+        self.z = [0] * self.opt.nz
 
         # Check boxes
         self.check_box_live_update = QCheckBox("Live update")
@@ -217,11 +218,12 @@ class LatentExplorer(QWidget):
             "Generate random sample")
         self.button_toggle_pen_eraser = QPushButton("Draw / Eraser")
         self.button_clear_page = QPushButton("Clear page")
+        self.button_auto_explore = QPushButton("Auto explore")
 
         # Sliders
         self.slider_max = 3
         self.slider_factor = 10000
-        self.sliders = [QSlider(Qt.Horizontal) for i in range(0, opt.nz)]
+        self.sliders = [QSlider(Qt.Horizontal) for i in range(0, self.opt.nz)]
         for slider in self.sliders:
             slider.setMinimum(-self.slider_max * self.slider_factor)
             slider.setMaximum(self.slider_max * self.slider_factor)
@@ -230,13 +232,13 @@ class LatentExplorer(QWidget):
             slider.setValue(0)
 
         # Text boxes
-        self.text_boxes = [QLineEdit() for i in range(0, opt.nz)]
+        self.text_boxes = [QLineEdit() for i in range(0, self.opt.nz)]
         for i, box in enumerate(self.text_boxes):
             box.setText(f'{self.sliders[i].value():.4f}')
 
         # Images
-        self.draw_area = DrawArea(opt, self.generator_input_path)
-        self.generator = Generator(opt, self.generator_input_path,
+        self.draw_area = DrawArea(self.opt, self.generator_input_path)
+        self.generator = Generator(self.opt, self.generator_input_path,
                                    self.generator_output_path, model)
 
         # Layout
@@ -254,6 +256,7 @@ class LatentExplorer(QWidget):
         self.layout.addWidget(self.button_generate_random_z)
         self.layout.addWidget(self.button_generate)
         self.layout.addWidget(self.button_generate_random_sample)
+        self.layout.addWidget(self.button_auto_explore)
         self.setLayout(self.layout)
 
         # Connecting the signals
@@ -269,6 +272,20 @@ class LatentExplorer(QWidget):
             self.generate_random_sample)
         self.button_toggle_pen_eraser.clicked.connect(self.draw_area.toggle_pen_eraser)
         self.button_clear_page.clicked.connect(self.draw_area.clear_page)
+        self.button_auto_explore.clicked.connect(self.auto_explore)
+
+    def auto_explore(self):
+        self.reset_z()
+        for slider in self.sliders:
+            self.move_slider_from_min_to_max(slider)
+            self.reset_z()
+
+    def move_slider_from_min_to_max(self, slider):
+        step = int(0.1 * self.slider_factor)
+        maximum = slider.maximum() + step
+        for value in range(slider.minimum(), maximum, step):
+            slider.setValue(value)
+            self.sliders_edited()
 
     def export_images(self):
         now = datetime.datetime.today()
