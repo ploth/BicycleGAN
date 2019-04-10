@@ -47,8 +47,9 @@ def plot(identifiers, data, epochs):
     fig, ax = plt.subplots()
     x = range(0, epochs)
     for i in range(0, data.shape[1]):
-        y = savgol_filter(data[:,i], args.kernel, args.polynomial, mode='nearest')
+        y = data[:,i]
         y = resample(y, epochs)
+        y = savgol_filter(y, args.kernel, args.polynomial, mode='nearest')
         ax.plot(x, y, linewidth=1)
 
     ax.legend(identifiers)
