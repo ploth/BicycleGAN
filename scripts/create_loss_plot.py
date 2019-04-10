@@ -14,12 +14,20 @@ def parse_args():
     arg_parser = argparse.ArgumentParser(
         description="create loss plot",
         formatter_class=argparse.RawTextHelpFormatter)
-    arg_parser.add_argument("-k", "--kernel", type=int, help="Kernel size used for loss-pass.")
-    arg_parser.add_argument("-p", "--polynomial", type=int, help="The polynomial order used for low-pass.")
+    arg_parser.add_argument(
+        "-k", "--kernel", type=int, help="Kernel size used for low-pass.")
+    arg_parser.add_argument(
+        "-p",
+        "--polynomial",
+        type=int,
+        help="The polynomial order used for low-pass.")
+    arg_parser.add_argument(
+        "-m", "--ymax", type=float, help="Maximum value of y axis.")
     arg_parser.add_argument("loss_log_file", help="The loss log file.")
     arg_parser.add_argument("output_folder", help="The output folder")
     args = arg_parser.parse_args()
     return args
+
 
 def parse_file(loss_log):
     caption = re.compile(r'^=')
@@ -39,21 +47,29 @@ def parse_file(loss_log):
     data = np.reshape(data, (-1, len(identifiers)))
     return identifiers, data
 
+
 def get_number_of_epochs(identifiers, data):
     index = identifiers.index('epoch')
     return int(np.amax(data[:, index]))
+
 
 def plot(identifiers, data, epochs):
     fig, ax = plt.subplots()
     x = range(0, epochs)
     for i in range(0, data.shape[1]):
         y = data[:,i]
+        y = savgol_filter(y, args.kernel, args.polynomial, mode='nearest')
         y = resample(y, epochs)
         y = savgol_filter(y, args.kernel, args.polynomial, mode='nearest')
         ax.plot(x, y, linewidth=1)
 
     ax.legend(identifiers)
+    plt.xlabel('Epoche')
+    plt.ylabel('Loss')
+    plt.xlim(0, epochs)
+    plt.ylim(0, args.ymax)
     plt.show()
+
 
 if __name__ == '__main__':
     args = parse_args()
