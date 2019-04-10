@@ -45,7 +45,7 @@ def get_number_of_epochs(identifiers, data):
 
 def plot(identifiers, data, epochs):
     fig, ax = plt.subplots()
-    x = range(0, data.shape[0])
+    x = range(0, epochs)
     for i in range(0, data.shape[1]):
         y = savgol_filter(data[:,i], args.kernel, args.polynomial, mode='nearest')
         y = resample(y, epochs)
