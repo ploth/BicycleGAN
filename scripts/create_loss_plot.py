@@ -40,7 +40,7 @@ def parse_file(loss_log):
 def plot(identifiers, data):
     fig, ax = plt.subplots()
     x = range(0, data.shape[0])
-    ax.plot(x, data)
+    ax.plot(x, data, linewidth=1)
     ax.legend(identifiers)
     plt.show()
 
