@@ -58,7 +58,6 @@ def plot(identifiers, data, epochs):
     x = range(0, epochs)
     for i in range(0, data.shape[1]):
         y = data[:,i]
-        y = savgol_filter(y, args.kernel, args.polynomial, mode='nearest')
         y = resample(y, epochs)
         y = savgol_filter(y, args.kernel, args.polynomial, mode='nearest')
         ax.plot(x, y, linewidth=1)
