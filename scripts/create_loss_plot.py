@@ -4,7 +4,7 @@ import re
 from collections import defaultdict
 from pathlib import Path
 import matplotlib.pyplot as plt
-from scipy.signal import savgol_filter
+from scipy.signal import savgol_filter, resample
 import numpy as np
 
 
@@ -48,6 +48,7 @@ def plot(identifiers, data, epochs):
     x = range(0, data.shape[0])
     for i in range(0, data.shape[1]):
         y = savgol_filter(data[:,i], args.kernel, args.polynomial, mode='nearest')
+        y = resample(y, epochs)
         ax.plot(x, y, linewidth=1)
 
     ax.legend(identifiers)
