@@ -14,11 +14,12 @@ def parse_args():
     arg_parser = argparse.ArgumentParser(
         description="create loss plot",
         formatter_class=argparse.RawTextHelpFormatter)
+    arg_parser.add_argument("-k", "--kernel", type=int, help="Kernel size used for loss-pass.")
+    arg_parser.add_argument("-p", "--polynomial", type=int, help="The polynomial order used for low-pass.")
     arg_parser.add_argument("loss_log_file", help="The loss log file.")
     arg_parser.add_argument("output_folder", help="The output folder")
     args = arg_parser.parse_args()
-    return Path(args.loss_log_file), Path(args.output_folder)
-
+    return args
 
 def parse_file(loss_log):
     caption = re.compile(r'^=')
@@ -46,15 +47,16 @@ def plot(identifiers, data, epochs):
     fig, ax = plt.subplots()
     x = range(0, data.shape[0])
     for i in range(0, data.shape[1]):
-        y = savgol_filter(data[:,i], 5, 1, mode='nearest')
+        y = savgol_filter(data[:,i], args.kernel, args.polynomial, mode='nearest')
         ax.plot(x, y, linewidth=1)
 
     ax.legend(identifiers)
     plt.show()
 
 if __name__ == '__main__':
-    loss_log_file, output_folder = parse_args()
+    args = parse_args()
 
+    loss_log_file = Path(args.loss_log_file)
     with open(str(loss_log_file), 'r') as file:
         loss_log = file.readlines()
 
