@@ -19,31 +19,50 @@ def parse_args():
     return Path(args.loss_log_file), Path(args.output_folder)
 
 
+def parse_file(loss_log):
+    caption = re.compile(r'^=')
+    key_value_pair_pattern = re.compile(r'(\w+):\s*(\d*.\d+)')
+
+    data = np.array([])
+    identifiers = []
+    for line in loss_log:
+        if re.match(caption, line):
+            continue
+
+        tuples = re.findall(key_value_pair_pattern, line)
+        identifiers = [pair[0] for pair in tuples]
+        values = [float(pair[1]) for pair in tuples]
+        data = np.append(data, values)
+
+    data = np.reshape(data, (-1, len(identifiers)))
+    return identifiers, data
+
+def plot(identifiers, data):
+    fig, ax = plt.subplots()
+    x = range(0, data.shape[0])
+    ax.plot(x, data)
+    ax.legend(identifiers)
+    plt.show()
+
 if __name__ == '__main__':
     loss_log_file, output_folder = parse_args()
 
     with open(str(loss_log_file), 'r') as file:
         loss_log = file.readlines()
 
-    values = defaultdict(lambda: [])
-    point = re.compile(
-        r'\((epoch):\s*(\d+),\s*(iters):\s*(\d+),\s*(time):\s*(\d*\.\d+),\s*(data):\s*(\d*\.\d+)\)\s*(G_GAN):\s*(\d*.\d+)\s*(D):\s*(\d*\.\d+)\s*(G_GAN2):\s*(\d*\.\d+)\s*(D2):\s*(\d*.\d+)\s*(G_L1):\s*(\d*\.\d+)\s*(G_IL1):\s*(\d*\.\d+)\s*(z_L1):\s*(\d*\.\d+)\s*(kl):\s*(\d*\.\d+)\s*'
-    )
-    for line in loss_log:
-        match = re.match(point, line)
-        if match:
-            for i in range(1, len(match.groups()), 2):
-                values[match[i]].append(float(match[i + 1]))
+    # Parse file
+    identifiers, data = parse_file(loss_log)
 
+    # Filter list
+    ignore = ['epoch', 'iters', 'time', 'data']
 
-    x = range(0, len(values['G_GAN']))
-    data = []
-    for key, value in values.items():
-        if key != 'epoch' and key != 'iters':
-            data.append(np.array(value))
-    #  data1 = np.array(values['G_GAN'])
-    #  data2 = np.array(values['G_GAN2'])
-    fig, ax = plt.subplots()
-    for entry in data:
-        ax.plot(x, entry)
-    plt.show()
+    # Create list of indexes to filter
+    indexes_to_ignore = [identifiers.index(element) for element in ignore]
+
+    # Create new identifier list
+    identifiers = [element for element in identifiers if element not in ignore]
+
+    # Delete unrelevant columns in data
+    data = np.delete(data, indexes_to_ignore, 1)
+
+    plot(identifiers, data)
