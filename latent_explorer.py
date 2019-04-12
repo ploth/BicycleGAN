@@ -216,6 +216,8 @@ class LatentExplorer(QWidget):
         self.button_generate_random_z = QPushButton("Generate random z")
         self.button_generate_random_sample = QPushButton(
             "Generate random sample")
+        self.button_generate_multiple_random_samples = QPushButton(
+            "Generate multiple random samples")
         self.button_toggle_pen_eraser = QPushButton("Pen / Eraser")
         self.button_clear_page = QPushButton("Clear page")
         self.button_auto_explore = QPushButton("Auto explore")
@@ -256,6 +258,7 @@ class LatentExplorer(QWidget):
         self.layout.addWidget(self.button_generate_random_z)
         self.layout.addWidget(self.button_generate)
         self.layout.addWidget(self.button_generate_random_sample)
+        self.layout.addWidget(self.button_generate_multiple_random_samples)
         self.layout.addWidget(self.button_auto_explore)
         self.setLayout(self.layout)
 
@@ -270,6 +273,8 @@ class LatentExplorer(QWidget):
         self.button_generate.clicked.connect(self.generate)
         self.button_generate_random_sample.clicked.connect(
             self.generate_random_sample)
+        self.button_generate_multiple_random_samples.clicked.connect(
+            self.generate_multiple_random_samples)
         self.button_toggle_pen_eraser.clicked.connect(self.draw_area.toggle_pen_eraser)
         self.button_clear_page.clicked.connect(self.draw_area.clear_page)
         self.button_auto_explore.clicked.connect(self.auto_explore)
@@ -306,6 +311,10 @@ class LatentExplorer(QWidget):
     def generate_random_z(self):
         z = self.generator.generate_random_z()
         self.update_input_widgets(*(z.tolist()))
+
+    def generate_multiple_random_samples(self):
+        for i in range(0,100):
+            self.generate_random_sample()
 
     def generate_random_sample(self):
         if self.draw_area.image_loaded:
