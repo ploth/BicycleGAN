@@ -6,6 +6,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from scipy.signal import savgol_filter, resample
 import numpy as np
+import seaborn as sns
 
 
 def parse_args():
@@ -105,4 +106,5 @@ if __name__ == '__main__':
     identifiers.append('totals')
 
     # Plot
+    sns.set_palette("bright")
     plot(identifiers, data, epochs)
