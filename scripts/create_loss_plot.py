@@ -94,4 +94,15 @@ if __name__ == '__main__':
     # Delete unrelevant columns in data
     data = np.delete(data, indexes_to_ignore, 1)
 
+    # Create column for total loss
+    totals = np.empty([data.shape[0], 1])
+    # Calculate total loss
+    totals = np.sum(data, axis=1)
+    totals = totals[...,np.newaxis]
+    # Append total loss to data array
+    data = np.concatenate((data, totals), axis=1)
+    # Add identifier
+    identifiers.append('totals')
+
+    # Plot
     plot(identifiers, data, epochs)
