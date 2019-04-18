@@ -61,7 +61,7 @@ def plot(identifiers, data, epochs):
         y = data[:,i]
         y = resample(y, epochs)
         y = savgol_filter(y, args.kernel, args.polynomial, mode='nearest')
-        ax.plot(x, y, linewidth=1)
+        ax.plot(x, y, linewidth=2)
 
     ax.legend(identifiers)
     plt.xlabel('Epoche')
