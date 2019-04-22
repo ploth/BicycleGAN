@@ -15,7 +15,6 @@ from PySide2.QtGui import QPainter, QColor, QFont, QImage, QPixmap, QPen
 from PySide2.QtCore import Slot, Qt, QPoint, QRect
 
 from options.test_options import TestOptions
-from data import create_dataset
 from models import create_model
 from util import util
 from data.aligned_dataset import AlignedDataset
