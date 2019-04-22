@@ -12,6 +12,7 @@ class TestOptions(BaseOptions):
         parser.add_argument('--sync', action='store_true', help='use the same latent code for different input images')
         parser.add_argument('--aspect_ratio', type=float, default=1.0, help='aspect ratio for the results')
         parser.add_argument('--eval', action='store_true', help='use eval mode during test time.')
+        parser.add_argument('--test_dir', type=str, default='.', help='test against specific folder.')
 
         self.isTrain = False
         return parser
