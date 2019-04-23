@@ -21,8 +21,11 @@ def generate_random_samples(opt, model, input_path, number_of_samples=10):
         # Save output image
         output_path = input_path.with_name(input_path.stem + '_' + str(i) +
                                            input_path.suffix)
-        util.save_image(image, str(output_path))
+        # Save image
+        image_pil = Image.fromarray(image)
+        image_pil.save(output_path)
 
+        # Append image
         images.append(image)
 
     return images
@@ -74,10 +77,6 @@ def data_from_tensor(tensor, path):
     return {'A': tensor, 'B': tensor, 'A_paths': path, 'B_paths': path}
 
 
-def calculate_variance(images):
-    pass
-
-
 if __name__ == '__main__':
     # Load options
     opt = TestOptions().parse()
@@ -96,13 +95,7 @@ if __name__ == '__main__':
     input_folder = Path(opt.test_dir)
     input_images = list(input_folder.glob('**/*.jpg'))
 
-    all_images = []
-
     # Loop through imatest_folder_bakges
     #  for path in tqdm(input_images):
     for path in input_images:
         images = generate_random_samples(opt, model, path)
-        all_images.append(images)
-        variance = calculate_variance(images)
-
-    variance_over_all_images = calculate_variance(all_images)
