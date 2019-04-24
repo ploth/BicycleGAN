@@ -3,6 +3,25 @@
 import re
 from collections import defaultdict
 from pathlib import Path
+from math import sqrt
+default_width = 5.78853 # in inches
+default_ratio = (sqrt(5.0) - 1.0) / 2.0 # golden mean
+import matplotlib as mpl
+mpl.use('pgf')
+mpl.rcParams.update({
+    "text.usetex": True, # use inline math for ticks
+    "pgf.texsystem": "lualatex",
+    "pgf.rcfonts": False,  # don't setup fonts from rc parameters
+    "font.size": 12,
+    "font.family": "serif",
+    "font.serif": [],
+    "font.sans-serif": [],
+    "font.monospace": [],
+    "figure.figsize": [default_width, default_width * default_ratio],
+    #  "pgf.preamble": [
+    #      r"\usepackage{metalogo}",
+    #  ],
+})
 import matplotlib.pyplot as plt
 from scipy.signal import savgol_filter, resample
 import numpy as np
@@ -24,8 +43,8 @@ def parse_args():
         help="The polynomial order used for low-pass.")
     arg_parser.add_argument(
         "-m", "--ymax", type=float, help="Maximum value of y axis.")
-    arg_parser.add_argument("loss_log_file", help="The loss log file.")
-    arg_parser.add_argument("output_folder", help="The output folder")
+    arg_parser.add_argument("-i", "--input", type=str, help="Log file to plot.")
+    arg_parser.add_argument("-o", "--output", type=str, help="Path to output figure (without suffix).")
     args = arg_parser.parse_args()
     return args
 
@@ -54,27 +73,30 @@ def get_number_of_epochs(identifiers, data):
     return int(np.amax(data[:, index]))
 
 
-def plot(identifiers, data, epochs):
+def plot(identifiers, data, epochs, output_path):
     fig, ax = plt.subplots()
     x = range(0, epochs)
     for i in range(0, data.shape[1]):
         y = data[:,i]
         y = resample(y, epochs)
         y = savgol_filter(y, args.kernel, args.polynomial, mode='nearest')
-        ax.plot(x, y, linewidth=2)
+        ax.plot(x, y, linewidth=1)
 
     ax.legend(identifiers)
-    plt.xlabel('Epoche')
-    plt.ylabel('Loss')
+    plt.xlabel(r'Epoche Lorem')
+    plt.ylabel(r'Loss $\sum p$')
     plt.xlim(0, epochs)
     plt.ylim(0, args.ymax)
-    plt.show()
+    plt.tight_layout()
+    #  plt.show()
+    #  plt.savefig(output_path.with_suffix('.pdf'))
+    plt.savefig(output_path.with_suffix('.pgf'))
 
 
 if __name__ == '__main__':
     args = parse_args()
 
-    loss_log_file = Path(args.loss_log_file)
+    loss_log_file = Path(args.input)
     with open(str(loss_log_file), 'r') as file:
         loss_log = file.readlines()
 
@@ -107,4 +129,4 @@ if __name__ == '__main__':
 
     # Plot
     sns.set_palette("bright")
-    plot(identifiers, data, epochs)
+    plot(identifiers, data, epochs, Path(args.output))
