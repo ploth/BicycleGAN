@@ -48,3 +48,5 @@ test/data/legacy_serialized.pt
 *~
 *exiv2_temp
 *dataset_backups
+*other_backups
+*unpaired_files
