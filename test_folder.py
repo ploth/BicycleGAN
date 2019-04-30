@@ -93,7 +93,7 @@ if __name__ == '__main__':
     model.eval()
 
     input_folder = Path(opt.test_dir)
-    input_images = list(input_folder.glob('**/*.jpg'))
+    input_images = list(input_folder.glob('**/*.png'))
 
     # Loop through imatest_folder_bakges
     #  for path in tqdm(input_images):
