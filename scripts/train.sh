@@ -41,6 +41,7 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --nz ${NZ} \
   --save_epoch_freq ${SAVE_EPOCH} \
   --input_nc ${INPUT_NC} \
+  --output_nc ${OUTPUT_NC} \
   --niter ${NITER} \
   --niter_decay ${NITER_DECAY} \
   --batch_size ${BATCH_SIZE} \
