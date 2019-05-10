@@ -25,8 +25,12 @@ def generate_random_samples(opt, model, input_path, number_of_samples=10):
         image_pil = Image.fromarray(image)
         image_pil.save(output_path)
 
+
         # Append image
         images.append(image)
+
+    # Delete input image
+    os.remove(str(input_path))
 
     return images
 
