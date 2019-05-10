@@ -15,6 +15,7 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python ./test.py \
   --crop_size ${CROP_SIZE} \
   --nz ${NZ} \
   --input_nc ${INPUT_NC} \
+  --output_nc ${OUTPUT_NC} \
   --num_test ${NUM_TEST} \
   --n_samples ${NUM_SAMPLES} \
   --aspect_ratio ${ASPECT_RATIO} \
