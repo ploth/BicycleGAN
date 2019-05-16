@@ -190,7 +190,9 @@ class BiCycleGANModel(BaseModel):
             self.loss_z_L1 = 0.0
         # penalty for similar images
         if self.lambda_IL1 > 0.0:
-            self.loss_G_IL1 = self.criterionL2(self.z_random, self.z_encoded) / self.criterionL1(self.fake_B_random, self.real_B_encoded) * self.lambda_IL1
+            #  self.loss_G_IL1 = self.criterionL2(self.z_random, self.z_encoded) / self.criterionL1(self.fake_B_random, self.real_B_encoded) * self.lambda_IL1
+            self.loss_G_IL1 = self.lambda_IL1 / (self.criterionL2(self.z_random, self.z_encoded) * self.criterionL1(self.fake_B_random, self.real_B_encoded))
+            #  self.loss_G_IL1 =  0
         else:
             self.loss_G_IL1 = 0.0
 
