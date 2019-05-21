@@ -11,7 +11,7 @@ mpl.use('pgf')
 mpl.rcParams.update({
     "text.usetex": True, # use inline math for ticks
     "pgf.texsystem": "lualatex",
-    "pgf.rcfonts": False,  # don't setup fonts from rc parameters
+    "pgf.rcfonts": False, # don't setup fonts from rc parameters
     "font.size": 12,
     "font.family": "serif",
     "font.serif": [],
@@ -83,13 +83,13 @@ def plot(identifiers, data, epochs, output_path):
         ax.plot(x, y, linewidth=1)
 
     ax.legend(identifiers)
-    plt.xlabel(r'Epoche Lorem')
-    plt.ylabel(r'Loss $\sum p$')
+    plt.xlabel(r'Epoche')
+    plt.ylabel(r'Verlust')
     plt.xlim(0, epochs)
     plt.ylim(0, args.ymax)
     plt.tight_layout()
     #  plt.show()
-    #  plt.savefig(output_path.with_suffix('.pdf'))
+    plt.savefig(output_path.with_suffix('.pdf'))
     plt.savefig(output_path.with_suffix('.pgf'))
 
 
