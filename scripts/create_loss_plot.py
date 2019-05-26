@@ -107,6 +107,7 @@ if __name__ == '__main__':
 
     # Filter list
     ignore = ['epoch', 'iters', 'time', 'data']
+    ignore.append('G_IL1')
 
     # Create list of indexes to filter
     indexes_to_ignore = [identifiers.index(element) for element in ignore]
@@ -114,18 +115,39 @@ if __name__ == '__main__':
     # Create new identifier list
     identifiers = [element for element in identifiers if element not in ignore]
 
+    # Latex identifiers
+    for i, identifier in enumerate(identifiers):
+        if identifier == 'G_GAN':
+            identifiers[i] = '$\mathcal{L}_{GAN}^{VAE}(G)$'
+        if identifier == 'D':
+            identifiers[i] = '$\mathcal{L}_{GAN}^{VAE}(D)$'
+        if identifier == 'G_GAN2':
+            identifiers[i] = '$\mathcal{L}_{GAN}(G)$'
+        if identifier == 'D2':
+            identifiers[i] = '$\mathcal{L}_{GAN}(D)$'
+        if identifier == 'G_L1':
+            identifiers[i] = '$\mathcal{L}_{1}^{VAE}(G,E)$'
+        if identifier == 'G_IL1':
+            identifiers[i] = '$1 / (\mathcal{L}_{2}^{latent}(E)\cdot\mathcal{L}_{1}^{LR}(G)$)'
+        if identifier == 'z_L1':
+            identifiers[i] = '$\mathcal{L}_{1}^{latent}(G,E)$'
+        if identifier == 'kl':
+            identifiers[i] = '$\mathcal{L}_{KL}(E)$'
+
     # Delete unrelevant columns in data
     data = np.delete(data, indexes_to_ignore, 1)
 
-    # Create column for total loss
-    totals = np.empty([data.shape[0], 1])
-    # Calculate total loss
-    totals = np.sum(data, axis=1)
-    totals = totals[...,np.newaxis]
-    # Append total loss to data array
-    data = np.concatenate((data, totals), axis=1)
-    # Add identifier
-    identifiers.append('totals')
+    add_totals = False
+    if add_totals:
+        # Create column for total loss
+        totals = np.empty([data.shape[0], 1])
+        # Calculate total loss
+        totals = np.sum(data, axis=1)
+        totals = totals[..., np.newaxis]
+        # Append total loss to data array
+        data = np.concatenate((data, totals), axis=1)
+        # Add identifier
+        identifiers.append('totals')
 
     # Plot
     sns.set_palette("bright")
